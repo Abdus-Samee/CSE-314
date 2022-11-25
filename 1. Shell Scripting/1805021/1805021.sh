@@ -19,7 +19,8 @@ done
 cd ../temp
 for file in *; do
     score=0
-    d=$(diff -w -y --suppress-common-lines "$file" "../AcceptedOutput.txt" | wc -l)
+    #d=$(diff -w -y --suppress-common-lines "$file" ../AcceptedOutput.txt | wc -l)
+    d=$(diff -w "$file" ../AcceptedOutput.txt | grep ^[\>\<] | wc -l)
     score=$((maxNum-d*5))
 
     if [ $score -lt 0 ] ; then
@@ -29,9 +30,8 @@ for file in *; do
     #find diff of file with other files
     for file2 in *; do
         if [ "$file" != "$file2" ] ; then
-            d=$(diff -w "$file" "$file2")
+            d=$(diff "$file" "$file2")
             if [ "$d" = "" ] ; then
-                echo "Duplicate $file of $file2"
                 if [ $score -gt 0 ] ; then
                     score=$((-1*score))
                     break
