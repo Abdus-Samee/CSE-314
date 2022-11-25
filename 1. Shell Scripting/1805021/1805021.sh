@@ -1,8 +1,8 @@
 #!/bin/bash
 
-maxNum=$#
+maxNum=$1
 
-if [ $maxNum -lt 1 ] ; then
+if [ $# -lt 1 ] ; then
     maxNum=100
 fi
 
@@ -18,7 +18,32 @@ done
 
 cd ../temp
 for file in *; do
-    diff -b "$file" "../AcceptedOutput.txt"
+    score=0
+    d=$(diff -w -y --suppress-common-lines "$file" "../AcceptedOutput.txt" | wc -l)
+    score=$((maxNum-d*5))
+
+    if [ $score -lt 0 ] ; then
+        score=0
+    fi
+
+    #find diff of file with other files
+    for file2 in *; do
+        if [ "$file" != "$file2" ] ; then
+            d=$(diff -w "$file" "$file2")
+            if [ "$d" = "" ] ; then
+                echo "Duplicate $file of $file2"
+                if [ $score -gt 0 ] ; then
+                    score=$((-1*score))
+                    break
+                elif [ $score -eq 0 ] ; then
+                    score=-100
+                    break
+                fi
+            fi
+        fi
+    done
+
+    echo "$file: $score"
 done 
 
 cd ..
