@@ -7,6 +7,7 @@ if [ $# -lt 1 ] ; then
 fi
 
 cd ..
+echo "student_id, score" > output1.csv
 mkdir temp
 cd Submissions
 
@@ -44,6 +45,9 @@ for file in *; do
     done
 
     echo "$file: $score"
+    echo $(echo $file | cut -d'.' -f1), $score >> ../output.csv
+    #name=$(cut -f 1 -d '.' "$file")
+    #echo "$name, $score" >> ../output1.csv
 done 
 
 cd ..
