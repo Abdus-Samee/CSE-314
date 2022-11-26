@@ -7,13 +7,21 @@ if [ $# -lt 1 ] ; then
 fi
 
 cd ..
-echo "student_id, score" > output1.csv
+echo "student_id, score" > output.csv
 mkdir temp
 cd Submissions
 
 for file in *; do
     cd $file
-    bash ./$file.sh > "../../temp/$file.txt"
+
+    #file is not present
+    if [ ! -f $file.sh ]; then
+        echo "$file.txt: $score"
+        echo $file, 0 >> ../../output.csv
+    else
+        bash ./$file.sh > "../../temp/$file.txt"
+    fi
+
     cd ..
 done
 
