@@ -7,19 +7,26 @@ if [ $# -lt 1 ] ; then
 fi
 
 cd ..
-echo "student_id, score" > output.csv
+echo "student_id, score" > output1.csv
 mkdir temp
 cd Submissions
 
 for file in *; do
     cd $file
 
-    #file is not present
+    #file is not present and file naming convention check
     if [ ! -f $file.sh ]; then
         echo "$file.txt: $score"
-        echo $file, 0 >> ../../output.csv
+        echo $file, 0 >> ../../output1.csv
     else
-        bash ./$file.sh > "../../temp/$file.txt"
+        #check for file naming convention
+        f=$(find -name "$file.sh")
+        if [ "$f" = "" ]; then
+            echo "$file.txt: $score"
+            echo $file, 0 >> ../../output1.csv
+        else
+            bash ./$file.sh > "../../temp/$file.txt"
+        fi
     fi
 
     cd ..
@@ -53,7 +60,7 @@ for file in *; do
     done
 
     echo "$file: $score"
-    echo $(echo $file | cut -d'.' -f1), $score >> ../output.csv
+    echo $(echo $file | cut -d'.' -f1), $score >> ../output1.csv
     #name=$(cut -f 1 -d '.' "$file")
     #echo "$name, $score" >> ../output1.csv
 done 
