@@ -7,6 +7,8 @@ UPROGS=\
   $U/_sh\
 	$U/_stressfs\
 	$U/_trace\        //added
+	.. ..
+	$U/_sysinfotest\   //added
   ... ...
 ```
 
@@ -16,6 +18,7 @@ UPROGS=\
 int sleep(int);
 int uptime(void);
 int trace(int);     //added
+int sysinfo(void);  //added
 ... ...
 ```
 
@@ -25,6 +28,7 @@ int trace(int);     //added
 entry("sleep");
 entry("uptime");
 entry("trace");    //added
+entry("sysinfo");    //added
 ```
 
 ## Kernel/proc.c
