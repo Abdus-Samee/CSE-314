@@ -38,6 +38,19 @@ sys_trace(void)
 }
 
 uint64
+sys_sysinfo(void)
+{
+  int free_memory = getFreeMemory();
+  int n_proc = getNProc();
+
+  printf("sysinfo system call prints:\n");
+  printf("free-memory: %d\n", free_memory);
+  printf("n_proc: %d\n", n_proc);
+  
+  return 0;
+}
+
+uint64
 sys_wait(void)
 {
   uint64 p;
