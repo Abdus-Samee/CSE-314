@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 #include "pstat.h" //inclusion of the pstat structure
+#include "rand.h" //inclusion of the rand function
 
 struct cpu cpus[NCPU];
 
@@ -291,10 +292,26 @@ int
 settickets(int n)
 {
   struct proc *p = myproc();
+  //struct proc *p2;
+
   if(n < 1){
     return -1;
   }
+
   p->tickets_original = n;
+  p->tickets_curr = n;
+  
+  // for(p2 = proc; p2 < &proc[NPROC]; p2++){
+  //   acquire(&p2->lock);
+  //   if(p2->pid == p->pid){
+  //     p2->tickets_original = n;
+  //     p2->tickets_curr = n;
+  //     //release(&p2->lock);
+  //     //return 0;
+  //   }
+  //   release(&p2->lock);
+  // }
+
   return 0;
 }
 
@@ -322,8 +339,8 @@ getpinfo(struct pstat *ps)
     i++;
   }
 
-  ps = &temp;
-  //if(copyout(myproc()->pagetable, *(uint64)ps, (char*)&temp, sizeof(temp)) != 0) return -1;
+  //ps = &temp;
+  if(copyout(myproc()->pagetable, (uint64)ps, (char*)&temp, sizeof(temp)) != 0) return -1;
 
   return 0;
 }
@@ -438,17 +455,6 @@ exit(int status)
 
   // Parent might be sleeping in wait().
   wakeup(p->parent);
-
-  for(int i = 0; i < NPROC; i++){
-    if(ps.pid[i] == p->pid){
-      ps.inuse[i] = 0;
-      ps.pid[i] = 0;
-      ps.tickets_original[i] = 0;
-      ps.tickets_current[i] = 0;
-      ps.time_slices[i] = 0;
-      break;
-    }
-  }
   
   acquire(&p->lock);
 
@@ -554,8 +560,8 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  int total_tickets = 0;
-  int winner;
+  long total_tickets = 0;
+  long winner;
   int count = 0;
   c->proc = 0;
   for(;;){
@@ -563,21 +569,23 @@ scheduler(void)
     intr_on();
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
-      if(p->state == RUNNABLE) total_tickets += p->tickets_curr;
+      if(p->state == RUNNABLE){
+        total_tickets += p->tickets_curr;
+      }
       release(&p->lock);
     }
 
-    winner = 0;
-    //winner = random_at_most(total_tickets); //lottery is done here to select the winning ticket
-    
+    //winner = 21;
+    winner = random_at_most(total_tickets); //lottery is done here to select the winning ticket
+
     for(p = proc; p < &proc[NPROC]; p++){
       acquire(&p->lock);
       if(p->state == RUNNABLE){
         count += p->tickets_curr;
-        if(count >= winner){
+        if(count > winner){
+          c->proc = p;
           p->state = RUNNING;
           p->time_slices++;
-          c->proc = p;
           swtch(&c->context, &p->context);
           p->time_slices--; //reduce time_slices by 1 after end of that time period
           p->tickets_curr--; //reduce current ticket number by 1
