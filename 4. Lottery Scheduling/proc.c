@@ -133,6 +133,9 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->tickets_original = 1;
+  p->tickets_curr = 1;
+  p->time_slices = 0;
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
@@ -552,7 +555,7 @@ scheduler(void)
     intr_on();
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
-      if(p->state == RUNNABLE) total_tickets += (p->tickets_curr >= 0)? p->tickets_curr : 0;
+      if(p->state == RUNNABLE) total_tickets += p->tickets_curr;
       release(&p->lock);
     }
 
@@ -562,7 +565,7 @@ scheduler(void)
     for(p = proc; p < &proc[NPROC]; p++){
       acquire(&p->lock);
       if(p->state == RUNNABLE){
-        count += (p->tickets_curr >= 0)? p->tickets_curr : 0;
+        count += p->tickets_curr;
         if(count >= winner){
           p->state = RUNNING;
           p->time_slices++;
@@ -570,7 +573,7 @@ scheduler(void)
           swtch(&c->context, &p->context);
           p->time_slices--; //reduce time_slices by 1 after end of that time period
           p->tickets_curr--; //reduce current ticket number by 1
-          if(p->tickets_curr == 0) p->tickets_curr = (p->tickets_original >= 0)? p->tickets_original : 0; //reset current ticket number to original ticket number
+          if(p->tickets_curr == 0) p->tickets_curr = p->tickets_original; //reset current ticket number to original ticket number
           c->proc = 0;
         }
       }
