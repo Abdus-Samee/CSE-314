@@ -16,5 +16,7 @@ main(int argc, char *argv[]){
     exit(1);
   }
 
+  while(1){}
+
   exit(0);
 }
