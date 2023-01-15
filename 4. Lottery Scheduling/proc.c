@@ -303,20 +303,28 @@ int
 getpinfo(struct pstat *ps)
 {
   struct proc *p;
+  struct pstat temp;
   int i = 0;
   for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
     if(p->state == UNUSED){
-      ps->inuse[i] = 0;
+      temp.inuse[i] = 0;
     }
     else{
-      ps->inuse[i] = 1;
-      ps->pid[i] = p->pid;
-      ps->tickets_original[i] = p->tickets_original;
-      ps->tickets_current[i] = p->tickets_curr;
-      ps->time_slices[i] = p->time_slices;
+      // printf("pid: %d, tickets_original: %d, tickets_current: %d, time_slices: %d\n", p->pid, p->tickets_original, p->tickets_curr, p->time_slices);
+      temp.inuse[i] = 1;
+      temp.pid[i] = p->pid;
+      temp.tickets_original[i] = p->tickets_original;
+      temp.tickets_current[i] = p->tickets_curr;
+      temp.time_slices[i] = p->time_slices;
     }
+    release(&p->lock);
     i++;
   }
+
+  ps = &temp;
+  //if(copyout(myproc()->pagetable, *(uint64)ps, (char*)&temp, sizeof(temp)) != 0) return -1;
+
   return 0;
 }
 
