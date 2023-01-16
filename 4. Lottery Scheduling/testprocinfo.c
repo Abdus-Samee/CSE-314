@@ -19,10 +19,10 @@ main(int argc, char *argv[]){
         exit(1);
     }
 
-    printf("PID    |    In Use    |    Original Tickets    |    Current Tickets    |    Time Slices\n");
+    printf("PID\t | In Use\t| Original Tickets\t | Current Tickets | Time Slices\n");
     for(int i = 0; i < NPROC; i++){
         if(p.inuse[i]){
-            printf("%d    |    %d    |    %d    |    %d    |    %d\n", p.pid[i], p.inuse[i], p.tickets_original[i], p.tickets_current[i], p.time_slices[i]);
+            printf("%d\t | %d\t\t|%d\t\t\t   | %d\t\t\t | %d\n", p.pid[i], p.inuse[i], p.tickets_original[i], p.tickets_current[i], p.time_slices[i]);
         }
     }
 
