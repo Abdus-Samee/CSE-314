@@ -16,6 +16,10 @@ main(int argc, char *argv[]){
     exit(1);
   }
 
+  /*Set Ticket to Fork*/
+  // if (fork() == 0) printf("Hello from child\n");
+  // else printf("Hello from parent\n");
+
   while(1){}
 
   exit(0);
