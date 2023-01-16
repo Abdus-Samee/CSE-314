@@ -373,17 +373,9 @@ fork(void)
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
 
-  // Fill in pstat structure
-  for(i = 0; i < NPROC; i++){
-    if(ps.inuse[i] == 0){
-      ps.inuse[i] = 1;
-      ps.pid[i] = np->pid;
-      ps.tickets_original[i] = p->tickets_original;
-      ps.tickets_current[i] = p->tickets_original;
-      ps.time_slices[i] = 0;
-      break;
-    }
-  }
+  // Copy tickets from parent to child
+  np->tickets_original = p->tickets_original;
+  np->tickets_curr = p->tickets_original;
 
   // increment reference counts on open file descriptors.
   for(i = 0; i < NOFILE; i++)
