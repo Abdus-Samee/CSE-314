@@ -560,19 +560,32 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  long total_tickets = 0;
-  long winner;
-  int count = 0;
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
+    
+    long total_tickets = 0;
+    long winner;
+    int count = 0;
+
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE){
         total_tickets += p->tickets_curr;
       }
       release(&p->lock);
+    }
+
+    if(total_tickets == 0LL){
+      for(p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if(p->state == RUNNABLE){
+          p->tickets_curr = p->tickets_original;
+        }
+        release(&p->lock);
+      }
+      continue;
     }
 
     //winner = 21;
@@ -583,14 +596,16 @@ scheduler(void)
       if(p->state == RUNNABLE){
         count += p->tickets_curr;
         if(count > winner){
-          c->proc = p;
           p->state = RUNNING;
           p->time_slices++;
+          c->proc = p;
           swtch(&c->context, &p->context);
-          p->time_slices--; //reduce time_slices by 1 after end of that time period
+          //p->time_slices--; //reduce time_slices by 1 after end of that time period
           p->tickets_curr--; //reduce current ticket number by 1
-          if(p->tickets_curr == 0) p->tickets_curr = p->tickets_original; //reset current ticket number to original ticket number
+          //if(p->tickets_curr == 0) p->tickets_curr = p->tickets_original; //reset current ticket number to original ticket number
           c->proc = 0;
+          release(&p->lock);
+          break;
         }
       }
       release(&p->lock);
