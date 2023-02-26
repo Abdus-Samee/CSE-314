@@ -146,7 +146,7 @@ swapOutLivePage()
   insertStruct(pid, va, s);
   // printf("swapout and insert struct done\n");
   
-  kfree((void*)pa);
+  //kfree((void*)pa);
 }
 
 void swapInLivePage(int pid, uint64 va)
